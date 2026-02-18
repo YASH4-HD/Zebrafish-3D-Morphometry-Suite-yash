@@ -102,5 +102,5 @@ with col_right:
         file_name="cdh2_analyzed_results.csv",
         mime="text/csv",
     )
-else:
+ else:
     st.info("📂 Please upload the Cdh2-CRISPR dataset to begin analysis.")
