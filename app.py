@@ -311,7 +311,7 @@ if uploaded_file:
             template="ggplot2",
         )
         fig_3d.update_traces(marker=dict(size=4, opacity=0.8))
-        st.plotly_chart(fig_3d, use_container_width=True)
+        st.plotly_chart(fig_3d, use_container_width=True, theme=None)
 
     with col_right:
         st.subheader("📈 Depth Profile")
