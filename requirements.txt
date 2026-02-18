@@ -4,3 +4,4 @@ plotly
 altair==4.2.2
 matplotlib
 scipy
+seaborn
