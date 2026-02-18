@@ -2,3 +2,4 @@ streamlit==1.31.0
 pandas
 plotly
 altair==4.2.2
+matplotlib
