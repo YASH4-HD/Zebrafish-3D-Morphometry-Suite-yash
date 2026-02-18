@@ -1,3 +1,5 @@
+import plotly.io as pio
+pio.renderers.default = "browser"
 import json
 from io import StringIO
 
@@ -306,7 +308,7 @@ if uploaded_file:
             color="region_label",
             symbol="cluster_id",
             hover_data=["outlier_score", "pseudotime"],
-            template="plotly_white",
+            template="ggplot2",
         )
         fig_3d.update_traces(marker=dict(size=4, opacity=0.8))
         st.plotly_chart(fig_3d, use_container_width=True)
