@@ -2,56 +2,63 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Zebrafish Analysis", layout="wide")
+st.set_page_config(page_title="Zebrafish 3D Analysis", layout="wide")
 
-st.title("🔬 Zebrafish 3D Morphometry")
+st.title("🔬 Zebrafish 3D Morphometry Suite")
+st.markdown("Quantitative analysis of nuclei spatial distribution in zebrafish embryos.")
 
-uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
+# 1. Sidebar for Data Upload
+st.sidebar.header("Data Input")
+uploaded_file = st.sidebar.file_uploader("Upload 'zebrafish_nuclei_data.csv'", type="csv")
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
     
-    # --- DEBUGGING STEP ---
-    # This will show us exactly what the columns are named
-    st.write("Detected Columns:", list(df.columns))
-    
-    # Find all numeric columns automatically
-    numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-    
-    if len(numeric_cols) >= 3:
-        # Use the first 3 numeric columns for X, Y, Z regardless of their names
-        z_col = numeric_cols[0]
-        y_col = numeric_cols[1]
-        x_col = numeric_cols[2]
-        vol_col = numeric_cols[3] if len(numeric_cols) > 3 else None
+    # EXACT MAPPING based on your detected columns
+    z_col = 'centroid-0'
+    y_col = 'centroid-1'
+    x_col = 'centroid-2'
+    vol_col = 'volume_voxels'
+    nn_col = 'nearest_neighbor_dist'
 
-        # 1. Metrics
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Nuclei Count", len(df))
-        m2.metric("Z-Axis", z_col)
-        m3.metric("X-Axis", x_col)
+    # 2. Key Metrics Row
+    st.subheader("📊 Quantitative Summary")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Nuclei", len(df))
+    m2.metric("Avg Volume", f"{df[vol_col].mean():.1f}")
+    m3.metric("Z-Depth Span", f"{df[z_col].max() - df[z_col].min():.1f}")
+    m4.metric("Mean NN Dist", f"{df[nn_col].mean():.2f}")
 
-        # 2. Charts with Forced Scaling
-        c1, c2 = st.columns(2)
-        
-        with c1:
-            fig_xy = px.scatter(df, x=x_col, y=y_col, color=z_col, 
-                               title="Spatial Map (Top View)",
-                               template="plotly_white")
-            # This forces the graph to zoom into the actual data points
-            fig_xy.update_xaxes(autorange=True)
-            fig_xy.update_yaxes(autorange=True)
-            st.plotly_chart(fig_xy, use_container_width=True)
+    st.markdown("---")
 
-        with c2:
-            fig_z = px.histogram(df, x=z_col, title="Depth Distribution",
-                                template="plotly_white", color_discrete_sequence=['#00CC96'])
-            fig_z.update_xaxes(autorange=True)
-            st.plotly_chart(fig_z, use_container_width=True)
-            
-        st.dataframe(df.head())
-    else:
-        st.error(f"Need at least 3 numeric columns. Found: {numeric_cols}")
+    # 3. 3D Visualization
+    st.subheader("📍 3D Spatial Distribution")
+    fig_3d = px.scatter_3d(
+        df, x=x_col, y=y_col, z=z_col,
+        color=vol_col,
+        opacity=0.8,
+        color_continuous_scale='Viridis',
+        labels={x_col: 'X (microns)', y_col: 'Y (microns)', z_col: 'Z (Depth)'}
+    )
+    # This ensures the camera is positioned to see the data immediately
+    fig_3d.update_layout(margin=dict(l=0, r=0, b=0, t=0), scene=dict(aspectmode='data'))
+    st.plotly_chart(fig_3d, use_container_width=True)
+
+    # 4. Depth Profile Histogram
+    st.subheader("📈 Nuclei Density by Depth")
+    fig_z = px.histogram(
+        df, x=z_col, 
+        nbins=20, 
+        color_discrete_sequence=['#00CC96'],
+        labels={z_col: 'Z-Coordinate (Depth)'},
+        template="plotly_white"
+    )
+    st.plotly_chart(fig_z, use_container_width=True)
+
+    # 5. Raw Data Inspection
+    with st.expander("🔍 Inspect Raw Morphometric Data"):
+        st.dataframe(df)
 
 else:
-    st.info("Please upload your CSV file.")
+    st.info("👋 Welcome! Please upload your CSV to visualize the 3D data.")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Zebrafish_embryo_72h.jpg/800px-Zebrafish_embryo_72h.jpg", caption="Zebrafish Embryo Model")
