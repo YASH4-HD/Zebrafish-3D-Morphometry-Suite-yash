@@ -72,3 +72,9 @@ if uploaded_file:
         ax2.set_ylabel('Volume (voxels)', fontsize=8)
         fig2.tight_layout()
         st.pyplot(fig2)
+    # 4. Data Inspector
+    with st.expander("🔍 View Raw Data Table"):
+        st.dataframe(df, use_container_width=True)
+
+else:
+    st.info("👋 Analysis Ready. Please upload your CSV file.")
