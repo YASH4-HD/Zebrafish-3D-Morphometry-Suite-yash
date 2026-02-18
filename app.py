@@ -43,7 +43,7 @@ if uploaded_file:
     # 4. Visualization Layout
     col_left, col_right = st.columns([1.2, 1])
     
-    with col_left:
+with col_left:
     st.subheader("📍 3D Spatial Phenotype")
     fig3d = plt.figure(figsize=(7, 6), dpi=100)
     # ... (your existing plotting code for fig3d) ...
@@ -59,7 +59,7 @@ if uploaded_file:
         mime="image/png"
     )
     
-    with col_right:
+with col_right:
     st.subheader("📈 Quantitative Analysis")
     
     # Plot 1: Volume Distribution
