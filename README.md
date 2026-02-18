@@ -24,6 +24,7 @@ Does the perturbation of *Cadherin-2 (Cdh2)*—a critical cell-cell adhesion mol
 | ![Validation](assets/segmentation_validation.png) | ![Distribution](assets/spatial_distribution.png) |
 | *Overlay of raw confocal data vs. computational labels.* | *Whole-tissue mapping of the segmented nuclear population.* |
 
+
 ---
 
 ## 🚀 Technical Features
