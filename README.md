@@ -45,20 +45,16 @@ Our analysis of the **S-BIAD1405** dataset (BioImage Archive) demonstrates that 
 ## 🛠️ Installation & Usage
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Zebrafish-MorphoPro.git
-## 🛠️ Installation & Usage
+   git clone https://github.com/YASH4-HD/Zebrafish-MorphoPro.git
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yashwantnama/Zebrafish-MorphoPro.git
-Install dependencies:
-pip install -r requirements.txt
+2. **Install dependencies:**
+   pip install -r requirements.txt
 
-Launch the Dashboard:
-streamlit run app.py
+3. **Launch the Dashboard:**
+   streamlit run app.py
 
-👨‍🔬 Author
-Yashwant Nama
+👨‍🔬 **Author**
+**Yashwant Nama**
 PhD Applicant | Molecular Biologist & Computational Researcher
 Specializing in Quantitative Developmental Biology, Mechanobiology, and Reproducible Bioinformatics.
 
