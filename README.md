@@ -53,10 +53,13 @@ Our analysis of the **S-BIAD1405** dataset (BioImage Archive) demonstrates that 
 3. **Launch the Dashboard:**
    streamlit run app.py
 
-👨‍🔬 **Author**
-**Yashwant Nama**
-PhD Applicant | Molecular Biologist & Computational Researcher
-Specializing in Quantitative Developmental Biology, Mechanobiology, and Reproducible Bioinformatics.
+---
+
+## 👨‍🔬 Author
+**Yashwant Nama**  
+*PhD Applicant | Molecular Biologist & Computational Researcher*  
+**Focus:** Quantitative Developmental Biology, Mechanobiology, and Reproducible Bioinformatics.
+
 
 
 
