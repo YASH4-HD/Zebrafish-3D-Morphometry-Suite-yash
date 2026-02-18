@@ -1,16 +1,16 @@
-    import io
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from scipy.stats import pearsonr
-    
-    st.set_page_config(page_title="Zebrafish Morphometry Pro", layout="wide")
-    
-    st.title("🧬 Cdh2-CRISPR Morphometry Suite")
-    st.markdown("*Advanced Spatial Analysis for Developmental Phenotyping*")
-    
-    uploaded_file = st.sidebar.file_uploader("Upload CRISPR Dataset (CSV)", type="csv")
+import io
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
+
+st.set_page_config(page_title="Zebrafish Morphometry Pro", layout="wide")
+
+st.title("🧬 Cdh2-CRISPR Morphometry Suite")
+st.markdown("*Advanced Spatial Analysis for Developmental Phenotyping*")
+
+uploaded_file = st.sidebar.file_uploader("Upload CRISPR Dataset (CSV)", type="csv")
     
     if uploaded_file:
         # 1. Robust Data Cleaning
