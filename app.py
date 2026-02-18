@@ -277,6 +277,7 @@ st.markdown("---")
 left, right = st.columns([2, 1])
 with left:
     st.subheader("📍 3D Spatial Distribution")
+
     fig3d = px.scatter_3d(
         df,
         x=x_col,
@@ -285,86 +286,114 @@ with left:
         color="region_label",
         hover_data=["cluster_id", "outlier_score", "pseudotime"],
         template="plotly_white",
+        height=600,
     )
-    fig3d.update_traces(marker=dict(size=4, opacity=0.8))
-    st.plotly_chart(fig3d, use_container_width=True, theme=None, key="plot_3d_spatial")
+
+    fig3d.update_traces(marker=dict(size=4, opacity=0.85))
+
+    fig3d.update_layout(
+        scene=dict(
+            xaxis=dict(title="X", autorange=True),
+            yaxis=dict(title="Y", autorange=True),
+            zaxis=dict(title="Z", autorange=True),
+        ),
+        margin=dict(l=0, r=0, t=40, b=0),
+    )
+
+    st.plotly_chart(fig3d, use_container_width=True)
+
+
 with right:
     st.subheader("📈 Depth Profile")
-    st.plotly_chart(px.histogram(df, x=z_col, nbins=25, template="plotly_white"), use_container_width=True, theme=None, key="plot_depth_profile")
+
+    fig_depth = px.histogram(
+        df,
+        x=z_col,
+        nbins=30,
+        template="plotly_white",
+        height=600,
+    )
+
+    fig_depth.update_xaxes(autorange=True, title="Z Depth")
+    fig_depth.update_yaxes(autorange=True, title="Count")
+
+    fig_depth.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+
+    st.plotly_chart(fig_depth, use_container_width=True)
+
+
+# ===============================
+# Volume + XY Density
+# ===============================
+
+st.markdown("---")
 
 c1, c2 = st.columns(2)
+
 if vol_col:
     with c1:
         st.subheader("📊 Volume Distribution")
-        st.plotly_chart(px.histogram(df, x=vol_col, nbins=30, template="plotly_white"), use_container_width=True, theme=None, key="plot_volume_distribution")
-with c2:
-    st.subheader("🧬 XY Projection Density")
-    st.plotly_chart(px.density_heatmap(df, x=x_col, y=y_col, nbinsx=40, nbinsy=40, template="plotly_white"), use_container_width=True, theme=None, key="plot_xy_density")
 
-st.markdown("---")
-st.subheader("🧪 Developmental Stage Comparator & Cohort Dashboard")
-cohort_rows = [
-    {
-        "sample": "uploaded_sample",
-        "n": len(df),
-        "mean_depth": float(df[z_col].mean()),
-        "mean_nn_graph": float(df["nn_mean_dist"].mean()),
-        "mean_volume": float(df[vol_col].mean()) if vol_col else np.nan,
-    }
-]
-if comparison_files:
-    for f in comparison_files:
-        sdf = pd.read_csv(f)
-        local_cols = {c.lower(): c for c in sdf.columns}
-        sx, sy, sz = local_cols.get("centroid-2"), local_cols.get("centroid-1"), local_cols.get("centroid-0")
-        if not (sx and sy and sz):
-            continue
-        sv = local_cols.get("volume_voxels")
-        snn = local_cols.get("nearest_neighbor_dist")
-        sdf = ensure_numeric(sdf, [sx, sy, sz] + ([sv] if sv else []) + ([snn] if snn else []))
-        sdf = sdf.dropna(subset=[sx, sy, sz])
-        if len(sdf) == 0:
-            continue
-        cohort_rows.append(
-            {
-                "sample": f.name,
-                "n": len(sdf),
-                "mean_depth": float(sdf[sz].mean()),
-                "mean_nn_graph": float(sdf[snn].mean()) if snn else np.nan,
-                "mean_volume": float(sdf[sv].mean()) if sv else np.nan,
-            }
+        fig_vol = px.histogram(
+            df,
+            x=vol_col,
+            nbins=40,
+            template="plotly_white",
+            height=500,
         )
 
-cohort_df = pd.DataFrame(cohort_rows)
-st.dataframe(cohort_df, use_container_width=True)
-if len(cohort_df) > 1:
-    metric_choice = st.selectbox("Comparator metric", ["mean_volume", "mean_depth", "mean_nn_graph"])
-    comp = cohort_df[["sample", metric_choice]].dropna().copy()
-    if len(comp) > 1:
-        base = comp.iloc[0][metric_choice]
-        comp["shift_vs_base"] = comp[metric_choice] - base
-        comp["effect_size"] = comp["shift_vs_base"] / max(comp[metric_choice].std(ddof=0), 1e-9)
-        st.plotly_chart(px.bar(comp, x="sample", y="shift_vs_base", color="effect_size", template="plotly_white"), use_container_width=True, theme=None, key="plot_cohort_shift")
-        st.info(f"Most atypical sample: **{comp.iloc[comp['effect_size'].abs().argmax()]['sample']}**")
+        # Optional: log scale for large voxel values
+        fig_vol.update_xaxes(type="log", title="Volume (log scale)")
+        fig_vol.update_yaxes(autorange=True, title="Count")
+
+        fig_vol.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+
+        st.plotly_chart(fig_vol, use_container_width=True)
+
+
+with c2:
+    st.subheader("🧬 XY Projection Density")
+
+    fig_xy = px.density_heatmap(
+        df,
+        x=x_col,
+        y=y_col,
+        nbinsx=50,
+        nbinsy=50,
+        template="plotly_white",
+        height=500,
+    )
+
+    fig_xy.update_xaxes(autorange=True, title="X")
+    fig_xy.update_yaxes(autorange=True, title="Y")
+
+    fig_xy.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+
+    st.plotly_chart(fig_xy, use_container_width=True)
+
+
+# ===============================
+# Radial Morphometry
+# ===============================
 
 st.markdown("---")
 st.subheader("🎯 Radial Morphometry from Landmark")
-use_center = st.checkbox("Use auto landmark (global centroid)", value=True)
-if use_center:
-    lx, ly, lz = df[[x_col, y_col, z_col]].mean().tolist()
-else:
-    lx = st.number_input("Landmark X", float(df[x_col].min()), float(df[x_col].max()), float(df[x_col].mean()))
-    ly = st.number_input("Landmark Y", float(df[y_col].min()), float(df[y_col].max()), float(df[y_col].mean()))
-    lz = st.number_input("Landmark Z", float(df[z_col].min()), float(df[z_col].max()), float(df[z_col].mean()))
 
-df["radial_distance"] = np.sqrt((df[x_col] - lx) ** 2 + (df[y_col] - ly) ** 2 + (df[z_col] - lz) ** 2)
-st.plotly_chart(
-    px.scatter(df, x="radial_distance", y="nn_mean_dist", color="region_label", template="plotly_white"),
-    use_container_width=True,
-    theme=None,
-    key="plot_radial_morphometry",
+fig_radial = px.scatter(
+    df,
+    x="radial_distance",
+    y="nn_mean_dist",
+    color="region_label",
+    template="plotly_white",
+    height=550,
 )
 
+fig_radial.update_xaxes(autorange=True, title="Radial Distance")
+fig_radial.update_yaxes(autorange=True, title="Mean Neighbor Distance")
+
+fig_radial.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+
+st.plotly_chart(fig_radial, use_container_width=True)
 st.markdown("---")
 st.subheader("🖼️ Publication-Ready Figure Composer")
 panels = st.multiselect("Select panels", ["Depth Hist", "Volume Hist", "Radial Scatter", "XY Projection"], default=["Depth Hist", "Radial Scatter"])
