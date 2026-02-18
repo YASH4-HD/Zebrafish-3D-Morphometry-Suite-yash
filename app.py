@@ -287,19 +287,19 @@ with left:
         template="plotly_white",
     )
     fig3d.update_traces(marker=dict(size=4, opacity=0.8))
-    st.plotly_chart(fig3d, use_container_width=True)
+    st.plotly_chart(fig3d, use_container_width=True, theme=None, key="plot_3d_spatial")
 with right:
     st.subheader("📈 Depth Profile")
-    st.plotly_chart(px.histogram(df, x=z_col, nbins=25, template="plotly_white"), use_container_width=True)
+    st.plotly_chart(px.histogram(df, x=z_col, nbins=25, template="plotly_white"), use_container_width=True, theme=None, key="plot_depth_profile")
 
 c1, c2 = st.columns(2)
 if vol_col:
     with c1:
         st.subheader("📊 Volume Distribution")
-        st.plotly_chart(px.histogram(df, x=vol_col, nbins=30, template="plotly_white"), use_container_width=True)
+        st.plotly_chart(px.histogram(df, x=vol_col, nbins=30, template="plotly_white"), use_container_width=True, theme=None, key="plot_volume_distribution")
 with c2:
     st.subheader("🧬 XY Projection Density")
-    st.plotly_chart(px.density_heatmap(df, x=x_col, y=y_col, nbinsx=40, nbinsy=40, template="plotly_white"), use_container_width=True)
+    st.plotly_chart(px.density_heatmap(df, x=x_col, y=y_col, nbinsx=40, nbinsy=40, template="plotly_white"), use_container_width=True, theme=None, key="plot_xy_density")
 
 st.markdown("---")
 st.subheader("🧪 Developmental Stage Comparator & Cohort Dashboard")
@@ -344,7 +344,7 @@ if len(cohort_df) > 1:
         base = comp.iloc[0][metric_choice]
         comp["shift_vs_base"] = comp[metric_choice] - base
         comp["effect_size"] = comp["shift_vs_base"] / max(comp[metric_choice].std(ddof=0), 1e-9)
-        st.plotly_chart(px.bar(comp, x="sample", y="shift_vs_base", color="effect_size", template="plotly_white"), use_container_width=True)
+        st.plotly_chart(px.bar(comp, x="sample", y="shift_vs_base", color="effect_size", template="plotly_white"), use_container_width=True, theme=None, key="plot_cohort_shift")
         st.info(f"Most atypical sample: **{comp.iloc[comp['effect_size'].abs().argmax()]['sample']}**")
 
 st.markdown("---")
@@ -361,6 +361,8 @@ df["radial_distance"] = np.sqrt((df[x_col] - lx) ** 2 + (df[y_col] - ly) ** 2 + 
 st.plotly_chart(
     px.scatter(df, x="radial_distance", y="nn_mean_dist", color="region_label", template="plotly_white"),
     use_container_width=True,
+    theme=None,
+    key="plot_radial_morphometry",
 )
 
 st.markdown("---")
@@ -382,7 +384,7 @@ if panels:
             fig.add_trace(go.Scatter(x=df[x_col], y=df[y_col], mode="markers", showlegend=False), row=1, col=col_i)
         col_i += 1
     fig.update_layout(template="plotly_white", height=420)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, theme=None, key="plot_publication_composer")
 
 st.markdown("---")
 st.subheader("🤖 Lightweight ML Phenotype Scoring")
@@ -397,7 +399,7 @@ if vol_col:
             feature_scores[feat] = abs(float(means["altered"] - means["normal"]))
     if feature_scores:
         imp = pd.DataFrame({"feature": feature_scores.keys(), "importance": feature_scores.values()}).sort_values("importance", ascending=False)
-        st.plotly_chart(px.bar(imp, x="feature", y="importance", template="plotly_white"), use_container_width=True)
+        st.plotly_chart(px.bar(imp, x="feature", y="importance", template="plotly_white"), use_container_width=True, theme=None, key="plot_feature_importance")
 
 st.subheader("⏱️ Temporal Trajectory (Pseudo-time)")
 trend_df = df.copy()
@@ -405,7 +407,7 @@ trend_df["pt_bin"] = pd.cut(trend_df["pseudotime"], bins=10)
 metrics = ["nn_mean_dist"] + ([vol_col] if vol_col else [])
 trend = trend_df.groupby("pt_bin", observed=False)[metrics].mean().reset_index()
 trend["pt_bin"] = trend["pt_bin"].astype(str)
-st.plotly_chart(px.line(trend, x="pt_bin", y=metrics, template="plotly_white"), use_container_width=True)
+st.plotly_chart(px.line(trend, x="pt_bin", y=metrics, template="plotly_white"), use_container_width=True, theme=None, key="plot_pseudotime_trend")
 
 st.markdown("---")
 st.subheader("🛡️ Quality-Control Audit Trail")
