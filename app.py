@@ -11,9 +11,10 @@ st.title("🔬 Zebrafish 3D Morphometry Suite")
 uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
 
 if uploaded_file:
-    # 1. Load and Force Numeric (Handling those commas in volume)
+    # 1. Load and Force Numeric
     df = pd.read_csv(uploaded_file)
     for col in df.columns:
+        # Clean commas from volume and convert to float
         df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
     
     df = df.dropna(subset=['centroid-0', 'centroid-1', 'centroid-2'])
@@ -26,7 +27,7 @@ if uploaded_file:
     m3.metric("Avg Volume", f"{df['volume_voxels'].mean():,.0f}")
     m4.metric("Avg NN Dist", f"{df['nearest_neighbor_dist'].mean():.2f}")
 
-    # 3. 3D Spatial Plot (With forced rendering settings)
+    # 3. 3D Spatial Plot (Force WebGL Rendering)
     st.subheader("📍 3D Spatial Distribution")
     
     fig3d = go.Figure(data=[go.Scatter3d(
@@ -35,31 +36,26 @@ if uploaded_file:
         z=df['centroid-0'],
         mode='markers',
         marker=dict(
-            size=4,
-            color=df['centroid-0'], # Color by depth
+            size=3,
+            color=df['centroid-0'], 
             colorscale='Viridis',
-            opacity=0.8,
-            showscale=True
+            opacity=0.7
         )
     )])
     
     fig3d.update_layout(
         scene=dict(
-            xaxis_title='X (Centroid-2)',
-            yaxis_title='Y (Centroid-1)',
-            zaxis_title='Z (Centroid-0)',
+            xaxis_title='X', yaxis_title='Y', zaxis_title='Z',
             aspectmode='data'
         ),
         margin=dict(l=0, r=0, b=0, t=0),
-        height=600,
-        paper_bgcolor='rgba(0,0,0,0)', # Transparent background
-        plot_bgcolor='rgba(0,0,0,0)'
+        height=600
     )
     
-    # Use theme=None and specify a unique key to force a fresh render
-    st.plotly_chart(fig3d, use_container_width=True, theme=None, key="zebrafish_3d_final")
+    # FORCE RENDERER and unique key
+    st.plotly_chart(fig3d, use_container_width=True, theme=None, key="final_3d_render")
 
-    # 4. 2D Distribution Plots (Matplotlib - Proven to work)
+    # 4. 2D Distribution Plots (Using the Matplotlib logic that worked)
     st.markdown("---")
     st.subheader("🧬 Morphometric Analysis")
     c1, c2 = st.columns(2)
@@ -67,23 +63,21 @@ if uploaded_file:
     with c1:
         st.markdown("### 📈 Depth Profile (Z)")
         fig1, ax1 = plt.subplots(figsize=(6, 4))
-        ax1.hist(df['centroid-0'], bins=25, color='#008080', edgecolor='white', alpha=0.8)
+        ax1.hist(df['centroid-0'], bins=25, color='#2E8B57', edgecolor='white')
         ax1.set_xlabel('Z-Coordinate (Depth)')
-        ax1.set_ylabel('Nuclei Count')
-        ax1.grid(axis='y', linestyle='--', alpha=0.7)
+        ax1.set_ylabel('Count')
         st.pyplot(fig1)
         
     with c2:
-        st.markdown("### 🎯 XY Spatial Projection")
+        st.markdown("### 🎯 Volume vs Neighborhood Density")
         fig2, ax2 = plt.subplots(figsize=(6, 4))
-        scatter = ax2.scatter(df['centroid-2'], df['centroid-1'], c=df['centroid-0'], cmap='viridis', s=30, alpha=0.7)
-        ax2.set_xlabel('X (Centroid-2)')
-        ax2.set_ylabel('Y (Centroid-1)')
-        plt.colorbar(scatter, ax=ax2, label='Depth (Z)')
+        ax2.scatter(df['nearest_neighbor_dist'], df['volume_voxels'], c=df['centroid-0'], cmap='plasma', alpha=0.6)
+        ax2.set_xlabel('NN Distance')
+        ax2.set_ylabel('Volume (voxels)')
         st.pyplot(fig2)
 
     # 5. Data Inspector
     with st.expander("🔍 Inspect Processed Data Table"):
         st.dataframe(df, use_container_width=True)
 else:
-    st.info("👋 Welcome! Please upload your 'zebrafish_nuclei_data.csv' to begin the analysis.")
+    st.info("👋 Analysis Ready. Please upload your CSV file.")
