@@ -103,5 +103,5 @@ with col_right:
         mime="text/csv",
     )
     
-    else:
+else:
     st.info("📂 Please upload the Cdh2-CRISPR dataset to begin analysis.")
