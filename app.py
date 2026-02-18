@@ -1,104 +1,80 @@
-import json
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
 st.set_page_config(page_title="Zebrafish 3D Morphometry", layout="wide")
 
 st.title("🔬 Zebrafish 3D Morphometry Suite")
-st.markdown("Comprehensive analysis of 3D nuclei segmentation outputs.")
 
-# =========================================================
-# 1. Data Cleaning (Crucial for your specific CSV)
-# =========================================================
-def clean_bio_data(df):
-    out = df.copy()
-    for col in out.columns:
-        # Remove commas from numbers like "596,512"
-        if out[col].dtype == 'object':
-            out[col] = out[col].astype(str).str.replace(',', '', regex=False)
-        out[col] = pd.to_numeric(out[col], errors='coerce')
-    return out
-
-# =========================================================
-# 2. KNN & PCA Logic
-# =========================================================
-def compute_metrics(df, x, y, z):
-    pts = df[[x, y, z]].to_numpy(float)
-    diff = pts[:, None, :] - pts[None, :, :]
-    dists = np.linalg.norm(diff, axis=2)
-    np.fill_diagonal(dists, np.inf)
-    nn_dist = np.sort(dists, axis=1)[:, :5].mean(axis=1)
-    
-    # PCA for Pseudotime
-    centered = pts - pts.mean(axis=0)
-    cov = np.cov(centered, rowvar=False)
-    evals, evecs = np.linalg.eigh(cov)
-    pc1 = centered @ evecs[:, np.argsort(evals)[-1]]
-    pseudotime = (pc1 - pc1.min()) / (pc1.max() - pc1.min())
-    
-    return nn_dist, pseudotime, float(evals.max() / max(evals.min(), 1e-9))
-
-# =========================================================
-# 3. Main App Execution
-# =========================================================
-st.sidebar.header("📂 Data Input")
-uploaded_file = st.sidebar.file_uploader("Upload nuclei CSV file", type="csv")
+# 1. Sidebar & File Upload
+uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
 
 if uploaded_file:
-    raw_df = pd.read_csv(uploaded_file)
-    df = clean_bio_data(raw_df)
+    df = pd.read_csv(uploaded_file)
     
-    # Column mapping
-    z_col, y_col, x_col = 'centroid-0', 'centroid-1', 'centroid-2'
-    vol_col = 'volume_voxels'
+    # Clean commas and force numbers
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].astype(str).str.replace(',', '', regex=False)
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     
-    df = df.dropna(subset=[x_col, y_col, z_col])
-    
-    # Run Calculations
-    nn_dist, ptime, anisotropy = compute_metrics(df, x_col, y_col, z_col)
-    df['nn_mean_dist'] = nn_dist
-    df['pseudotime'] = ptime
-    
-    # Radial Distance
-    lx, ly, lz = df[x_col].mean(), df[y_col].mean(), df[z_col].mean()
-    df['radial_distance'] = np.sqrt((df[x_col]-lx)**2 + (df[y_col]-ly)**2 + (df[z_col]-lz)**2)
+    df = df.dropna(subset=['centroid-0', 'centroid-1', 'centroid-2'])
 
-    # Metrics Row
+    # 2. Metrics
     st.subheader("📊 Quantitative Summary")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Total Nuclei", len(df))
-    c2.metric("Z-Depth Span", f"{(df[z_col].max() - df[z_col].min()):.2f}")
-    c3.metric("Anisotropy Ratio", f"{anisotropy:.2f}")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Total Nuclei", len(df))
+    m2.metric("Z-Span", f"{df['centroid-0'].max() - df['centroid-0'].min():.2f}")
+    m3.metric("Avg Volume", f"{df['volume_voxels'].mean():,.0f}")
 
-    # 3D Plot with MANUAL SCALE
+    # 3. 3D Spatial Plot (Using Graph Objects for better control)
     st.subheader("📍 3D Spatial Distribution")
-    fig3d = px.scatter_3d(df, x=x_col, y=y_col, z=z_col, color='nn_mean_dist', 
-                         color_continuous_scale='Viridis', height=600)
-    # FORCE ZOOM
-    fig3d.update_layout(scene=dict(
-        xaxis=dict(range=[df[x_col].min(), df[x_col].max()]),
-        yaxis=dict(range=[df[y_col].min(), df[y_col].max()]),
-        zaxis=dict(range=[df[z_col].min(), df[z_col].max()])
-    ))
+    fig3d = go.Figure(data=[go.Scatter3d(
+        x=df['centroid-2'],
+        y=df['centroid-1'],
+        z=df['centroid-0'],
+        mode='markers',
+        marker=dict(size=4, color=df['centroid-0'], colorscale='Viridis', opacity=0.8)
+    )])
+    
+    # MANUALLY FORCE THE BOX SIZE
+    fig3d.update_layout(
+        scene=dict(
+            xaxis=dict(range=[df['centroid-2'].min(), df['centroid-2'].max()], title='X'),
+            yaxis=dict(range=[df['centroid-1'].min(), df['centroid-1'].max()], title='Y'),
+            zaxis=dict(range=[df['centroid-0'].min(), df['centroid-0'].max()], title='Z'),
+            aspectmode='data'
+        ),
+        margin=dict(l=0, r=0, b=0, t=0),
+        height=600
+    )
     st.plotly_chart(fig3d, use_container_width=True)
 
-    # 2D Plots
-    col_a, col_b = st.columns(2)
-    with col_a:
+    # 4. 2D Distribution Plots
+    c1, c2 = st.columns(2)
+    
+    with c1:
         st.subheader("📈 Depth Profile")
-        fig_h = px.histogram(df, x=z_col, nbins=20, color_discrete_sequence=['#00CC96'])
-        fig_h.update_xaxes(range=[df[z_col].min(), df[z_col].max()])
-        st.plotly_chart(fig_h, use_container_width=True)
-    with col_b:
-        st.subheader("🎯 Radial Morphometry")
-        fig_r = px.scatter(df, x='radial_distance', y='nn_mean_dist', color='pseudotime')
-        fig_r.update_xaxes(range=[df['radial_distance'].min(), df['radial_distance'].max()])
-        st.plotly_chart(fig_r, use_container_width=True)
+        fig_z = go.Figure(data=[go.Histogram(x=df['centroid-0'], nbinsx=20, marker_color='#00CC96')])
+        fig_z.update_layout(xaxis=dict(range=[df['centroid-0'].min(), df['centroid-0'].max()]), template="plotly_white")
+        st.plotly_chart(fig_z, use_container_width=True)
+        
+    with c2:
+        st.subheader("🎯 XY Density")
+        fig_xy = go.Figure(data=[go.Scatter(
+            x=df['centroid-2'], y=df['centroid-1'], mode='markers',
+            marker=dict(color=df['centroid-0'], colorscale='Plasma')
+        )])
+        fig_xy.update_layout(
+            xaxis=dict(range=[df['centroid-2'].min(), df['centroid-2'].max()]),
+            yaxis=dict(range=[df['centroid-1'].min(), df['centroid-1'].max()]),
+            template="plotly_white"
+        )
+        st.plotly_chart(fig_xy, use_container_width=True)
 
-    with st.expander("🔍 Inspect Processed Data"):
+    with st.expander("🔍 Raw Data Table"):
         st.dataframe(df)
+
 else:
-    st.info("Please upload your CSV to begin.")
+    st.info("Please upload your CSV file.")
