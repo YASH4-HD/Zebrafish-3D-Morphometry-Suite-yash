@@ -2,63 +2,67 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Zebrafish 3D Analysis", layout="wide")
+st.set_page_config(page_title="Zebrafish Morphometry", layout="wide")
 
 st.title("🔬 Zebrafish 3D Morphometry Suite")
-st.markdown("Quantitative analysis of nuclei spatial distribution in zebrafish embryos.")
+st.markdown("Quantitative analysis of nuclei spatial distribution.")
 
-# 1. Sidebar for Data Upload
+# 1. Sidebar
 st.sidebar.header("Data Input")
-uploaded_file = st.sidebar.file_uploader("Upload 'zebrafish_nuclei_data.csv'", type="csv")
+uploaded_file = st.sidebar.file_uploader("Upload CSV", type="csv")
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
     
-    # EXACT MAPPING based on your detected columns
-    z_col = 'centroid-0'
-    y_col = 'centroid-1'
-    x_col = 'centroid-2'
-    vol_col = 'volume_voxels'
-    nn_col = 'nearest_neighbor_dist'
+    # Auto-detect columns
+    cols = {c.lower(): c for c in df.columns}
+    z_col = cols.get('centroid-0')
+    y_col = cols.get('centroid-1')
+    x_col = cols.get('centroid-2')
+    vol_col = cols.get('volume_voxels')
 
-    # 2. Key Metrics Row
+    # 2. Key Metrics
     st.subheader("📊 Quantitative Summary")
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total Nuclei", len(df))
-    m2.metric("Avg Volume", f"{df[vol_col].mean():.1f}")
-    m3.metric("Z-Depth Span", f"{df[z_col].max() - df[z_col].min():.1f}")
-    m4.metric("Mean NN Dist", f"{df[nn_col].mean():.2f}")
+    if vol_col: m2.metric("Avg Volume", f"{df[vol_col].mean():.1f}")
+    if z_col: m3.metric("Z-Depth Span", f"{df[z_col].max() - df[z_col].min():.1f}")
+    if cols.get('nearest_neighbor_dist'): 
+        m4.metric("Mean NN Dist", f"{df[cols.get('nearest_neighbor_dist')].mean():.2f}")
 
     st.markdown("---")
 
-    # 3. 3D Visualization
-    st.subheader("📍 3D Spatial Distribution")
-    fig_3d = px.scatter_3d(
-        df, x=x_col, y=y_col, z=z_col,
-        color=vol_col,
-        opacity=0.8,
-        color_continuous_scale='Viridis',
-        labels={x_col: 'X (microns)', y_col: 'Y (microns)', z_col: 'Z (Depth)'}
-    )
-    # This ensures the camera is positioned to see the data immediately
-    fig_3d.update_layout(margin=dict(l=0, r=0, b=0, t=0), scene=dict(aspectmode='data'))
-    st.plotly_chart(fig_3d, use_container_width=True)
+    # 3. Scientific Projections (More reliable than 3D)
+    st.subheader("📍 Spatial Projections")
+    c1, c2 = st.columns(2)
 
-    # 4. Depth Profile Histogram
-    st.subheader("📈 Nuclei Density by Depth")
-    fig_z = px.histogram(
-        df, x=z_col, 
-        nbins=20, 
-        color_discrete_sequence=['#00CC96'],
-        labels={z_col: 'Z-Coordinate (Depth)'},
-        template="plotly_white"
-    )
+    with c1:
+        # Top-down View (XY)
+        fig_xy = px.scatter(df, x=x_col, y=y_col, color=z_col, 
+                           title="Top-down View (Color = Depth)",
+                           color_continuous_scale='Viridis', template="plotly_white")
+        # Ensure axes are zoomed to data
+        fig_xy.update_layout(xaxis=dict(autorange=True), yaxis=dict(autorange=True))
+        st.plotly_chart(fig_xy, use_container_width=True)
+
+    with c2:
+        # Side View (XZ)
+        fig_xz = px.scatter(df, x=x_col, y=z_col, color=vol_col,
+                           title="Side View (Color = Volume)",
+                           color_continuous_scale='Magma', template="plotly_white")
+        # Ensure axes are zoomed to data
+        fig_xz.update_layout(xaxis=dict(autorange=True), yaxis=dict(autorange=True))
+        st.plotly_chart(fig_xz, use_container_width=True)
+
+    # 4. Depth Distribution
+    st.subheader("📈 Depth Profile")
+    fig_z = px.histogram(df, x=z_col, nbins=20, template="plotly_white", color_discrete_sequence=['#00CC96'])
+    fig_z.update_layout(xaxis=dict(autorange=True))
     st.plotly_chart(fig_z, use_container_width=True)
 
-    # 5. Raw Data Inspection
-    with st.expander("🔍 Inspect Raw Morphometric Data"):
+    with st.expander("🔍 Inspect Raw Data"):
         st.dataframe(df)
 
 else:
-    st.info("👋 Welcome! Please upload your CSV to visualize the 3D data.")
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Zebrafish_embryo_72h.jpg/800px-Zebrafish_embryo_72h.jpg", caption="Zebrafish Embryo Model")
+    st.info("👋 Please upload your CSV to begin.")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Zebrafish_embryo_72h.jpg/800px-Zebrafish_embryo_72h.jpg")
