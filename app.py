@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 st.set_page_config(page_title="Zebrafish 3D Morphometry", layout="wide")
 
@@ -14,7 +14,6 @@ if uploaded_file:
     # 1. Load and Force Numeric
     df = pd.read_csv(uploaded_file)
     for col in df.columns:
-        # Clean commas from volume and convert to float
         df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
     
     df = df.dropna(subset=['centroid-0', 'centroid-1', 'centroid-2'])
@@ -27,35 +26,27 @@ if uploaded_file:
     m3.metric("Avg Volume", f"{df['volume_voxels'].mean():,.0f}")
     m4.metric("Avg NN Dist", f"{df['nearest_neighbor_dist'].mean():.2f}")
 
-    # 3. 3D Spatial Plot (Force WebGL Rendering)
+    # 3. 3D Spatial Plot (Using Matplotlib for 100% Stability)
     st.subheader("📍 3D Spatial Distribution")
     
-    fig3d = go.Figure(data=[go.Scatter3d(
-        x=df['centroid-2'],
-        y=df['centroid-1'],
-        z=df['centroid-0'],
-        mode='markers',
-        marker=dict(
-            size=3,
-            color=df['centroid-0'], 
-            colorscale='Viridis',
-            opacity=0.7
-        )
-    )])
+    fig3d = plt.figure(figsize=(10, 7))
+    ax3d = fig3d.add_subplot(111, projection='3d')
     
-    fig3d.update_layout(
-        scene=dict(
-            xaxis_title='X', yaxis_title='Y', zaxis_title='Z',
-            aspectmode='data'
-        ),
-        margin=dict(l=0, r=0, b=0, t=0),
-        height=600
-    )
+    # Scatter plot: X=centroid-2, Y=centroid-1, Z=centroid-0
+    p = ax3d.scatter(df['centroid-2'], df['centroid-1'], df['centroid-0'], 
+                     c=df['centroid-0'], cmap='viridis', s=20, alpha=0.6)
     
-    # FORCE RENDERER and unique key
-    st.plotly_chart(fig3d, use_container_width=True, theme=None, key="final_3d_render")
+    ax3d.set_xlabel('X (Centroid-2)')
+    ax3d.set_ylabel('Y (Centroid-1)')
+    ax3d.set_zlabel('Z (Centroid-0)')
+    ax3d.set_title("3D Nuclei Positions")
+    
+    # Add a colorbar
+    fig3d.colorbar(p, ax=ax3d, label='Depth (Z)', pad=0.1)
+    
+    st.pyplot(fig3d)
 
-    # 4. 2D Distribution Plots (Using the Matplotlib logic that worked)
+    # 4. 2D Distribution Plots (The ones that worked)
     st.markdown("---")
     st.subheader("🧬 Morphometric Analysis")
     c1, c2 = st.columns(2)
