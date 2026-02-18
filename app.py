@@ -102,6 +102,5 @@ if uploaded_file:
 			file_name="cdh2_analyzed_results.csv",
 			mime="text/csv",
 		)
-
-	else:
-		st.info("📂 Please upload the Cdh2-CRISPR dataset to begin analysis.")
+else:
+    st.info("📂 Please upload the Cdh2-CRISPR dataset to begin analysis.")
