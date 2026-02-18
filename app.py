@@ -12,7 +12,7 @@ st.markdown("*Advanced Spatial Analysis for Developmental Phenotyping*")
 
 uploaded_file = st.sidebar.file_uploader("Upload CRISPR Dataset (CSV)", type="csv")
     
-    if uploaded_file:
+if uploaded_file:
     # 1. Robust Data Cleaning
     df = pd.read_csv(uploaded_file)
     for col in df.columns:
