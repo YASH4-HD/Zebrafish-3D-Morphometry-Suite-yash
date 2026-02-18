@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -42,48 +43,54 @@ if uploaded_file:
     # 4. Visualization Layout
     col_left, col_right = st.columns([1.2, 1])
 
-    with col_left:
-        st.subheader("📍 3D Spatial Phenotype")
-        fig3d = plt.figure(figsize=(7, 6), dpi=100)
-        ax3d = fig3d.add_subplot(111, projection='3d')
-        
-        # Color by Volume to show phenotypic heterogeneity
-        p = ax3d.scatter(df_filtered['centroid-2'], df_filtered['centroid-1'], df_filtered['centroid-0'], 
-                         c=df_filtered['volume_voxels'], cmap='magma', s=20, alpha=0.7)
-        
-        ax3d.set_xlabel('X (Centroid-2)', fontsize=9, labelpad=10)
-        ax3d.set_ylabel('Y (Centroid-1)', fontsize=9, labelpad=10)
-        ax3d.set_zlabel('Z (Depth)', fontsize=9, labelpad=10)
-        
-        # Modern Styling
-        ax3d.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        ax3d.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        ax3d.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        
-        plt.colorbar(p, ax=ax3d, label='Nucleus Volume (voxels)', shrink=0.5, pad=0.15)
-        fig3d.tight_layout()
-        st.pyplot(fig3d)
+   with col_left:
+    st.subheader("📍 3D Spatial Phenotype")
+    fig3d = plt.figure(figsize=(7, 6), dpi=100)
+    # ... (your existing plotting code for fig3d) ...
+    st.pyplot(fig3d)
+    
+    # NEW: Download button for 3D Plot
+    buf3d = io.BytesIO()
+    fig3d.savefig(buf3d, format="png", dpi=300)
+    st.download_button(
+        label="📸 Download 3D Plot (PNG)",
+        data=buf3d.getvalue(),
+        file_name="3d_spatial_phenotype.png",
+        mime="image/png"
+    )
 
-    with col_right:
-        st.subheader("📈 Quantitative Analysis")
-        
-        # Plot 1: Volume Distribution
-        fig1, ax1 = plt.subplots(figsize=(6, 3), dpi=100)
-        ax1.hist(df_filtered['volume_voxels'], bins=25, color='#8A2BE2', edgecolor='white', alpha=0.7)
-        ax1.set_title('Volumetric Heterogeneity', fontsize=10)
-        ax1.set_xlabel('Volume (voxels)', fontsize=8)
-        fig1.tight_layout()
-        st.pyplot(fig1)
-        
-        # Plot 2: Spatial Packing (NN Dist vs Z-Depth)
-        fig2, ax2 = plt.subplots(figsize=(6, 3), dpi=100)
-        ax2.scatter(df_filtered['centroid-0'], df_filtered['nearest_neighbor_dist'], 
-                    c=df_filtered['nearest_neighbor_dist'], cmap='viridis', s=15, alpha=0.6)
-        ax2.set_title('Packing Density vs. Tissue Depth', fontsize=10)
-        ax2.set_xlabel('Z-Depth', fontsize=8)
-        ax2.set_ylabel('NN Distance', fontsize=8)
-        fig2.tight_layout()
-        st.pyplot(fig2)
+with col_right:
+    st.subheader("📈 Quantitative Analysis")
+    
+    # Plot 1: Volume Distribution
+    fig1, ax1 = plt.subplots(figsize=(6, 3), dpi=100)
+    # ... (your existing plotting code for fig1) ...
+    st.pyplot(fig1)
+    
+    # NEW: Download button for Volume Hist
+    buf1 = io.BytesIO()
+    fig1.savefig(buf1, format="png", dpi=300)
+    st.download_button(
+        label="📊 Download Volume Distribution",
+        data=buf1.getvalue(),
+        file_name="volume_distribution.png",
+        mime="image/png"
+    )
+    
+    # Plot 2: Spatial Packing
+    fig2, ax2 = plt.subplots(figsize=(6, 3), dpi=100)
+    # ... (your existing plotting code for fig2) ...
+    st.pyplot(fig2)
+
+    # NEW: Download button for Packing Plot
+    buf2 = io.BytesIO()
+    fig2.savefig(buf2, format="png", dpi=300)
+    st.download_button(
+        label="📉 Download Packing Analysis",
+        data=buf2.getvalue(),
+        file_name="packing_analysis.png",
+        mime="image/png"
+    )
 
     # 5. Data Export Section
     st.markdown("---")
