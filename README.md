@@ -9,7 +9,7 @@
 This repository contains a specialized computational pipeline for the **3D morphometric analysis of *Cdh2*-CRISPR zebrafish embryos**. By integrating high-resolution confocal microscopy with automated segmentation and statistical modeling, this tool quantifies the relationship between cell-cell adhesion loss and nuclear architecture.
 
 ### Key Biological Question
-Does the perturbation of Cadherin-2 (Cdh2)*—a critical cell-cell adhesion molecule—lead to predictable changes in **nuclear morphometry** and **spatial packing density**?
+Does the perturbation of Cadherin-2 *(Cdh2)*—a critical cell-cell adhesion molecule—lead to predictable changes in **nuclear morphometry** and **spatial packing density**?
 
 ---
 
