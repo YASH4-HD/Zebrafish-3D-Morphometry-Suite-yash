@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🔬 Project Overview
-This repository contains a specialized computational pipeline for the **3D morphometric analysis of Cdh2-CRISPR zebrafish embryos**. By integrating high-resolution confocal microscopy with automated segmentation and statistical modeling, this tool quantifies the relationship between cell-cell adhesion loss and nuclear architecture.
+This repository contains a specialized computational pipeline for the **3D morphometric analysis of *Cdh2*-CRISPR zebrafish embryos**. By integrating high-resolution confocal microscopy with automated segmentation and statistical modeling, this tool quantifies the relationship between cell-cell adhesion loss and nuclear architecture.
 
 ### Key Biological Question
 Does the perturbation of *Cadherin-2 (Cdh2)*—a critical cell-cell adhesion molecule—lead to predictable changes in nuclear volume and spatial packing?
