@@ -69,7 +69,7 @@ GitHub. https://github.com/YASH4-HD/Zebrafish-3D-Morphometry-Suite-yash
 **Yashwant Nama**  
 *PhD Applicant | Molecular Biologist & Computational Researcher*  
 **Focus:** Quantitative Developmental Biology, Mechanobiology, and Reproducible Bioinformatics.
-
+ORCID: 0009-0003-3443-4413 | LinkedIn
 
 
 
