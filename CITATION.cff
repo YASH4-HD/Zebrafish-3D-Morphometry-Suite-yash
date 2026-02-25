@@ -1,1 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Nama"
+  given-names: "Yashwant"
+  orcid: "https://orcid.org/0009-0003-3443-4413"
+title: "Zebrafish-MorphoPro: Quantitative 3D Phenotyping Suite"
+version: 1.0.0
+date-released: 2026-02-19
+url: "https://github.com/YASH4-HD/Zebrafish-3D-Morphometry-Suite-yash"
 
