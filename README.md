@@ -59,17 +59,24 @@ Analysis of the **S-BIAD1405** dataset (BioImage Archive) demonstrates that ***c
    streamlit run app.py
 
 ---
+
 ## 📜 Citation
 If you use this suite in your research, please cite it as:
-Nama, Y. (2026). Zebrafish-MorphoPro: Quantitative 3D Phenotyping Suite (Version 1.0.0). 
-GitHub. https://github.com/YASH4-HD/Zebrafish-3D-Morphometry-Suite-yash
+> **Nama, Y. (2026).** *Zebrafish-MorphoPro: Quantitative 3D Phenotyping Suite (Version 1.0.0).* GitHub. [https://github.com/YASH4-HD/Zebrafish-3D-Morphometry-Suite-yash](https://github.com/YASH4-HD/Zebrafish-3D-Morphometry-Suite-yash)
 
 ---
+
 ## 👨‍🔬 Author
+
 **Yashwant Nama**  
-*PhD Applicant | Molecular Biologist & Computational Researcher*  
+*PhD Applicant | Molecular Biologist & Computational Researcher*
+
 **Focus:** Quantitative Developmental Biology, Mechanobiology, and Reproducible Bioinformatics.
-ORCID: 0009-0003-3443-4413 | LinkedIn
+
+🔗 **Connect & Verify:**
+*   **ORCID:** [0009-0003-3443-4413](https://orcid.org/0009-0003-3443-4413)
+*   **LinkedIn:** [Yashwant Nama](https://www.linkedin.com/in/yashwant-nama-232b2437b/)
+*   **Project Website:** [Streamlit Dashboard](https://zebrafish-3d-morphometry-suite-yash.streamlit.app/)
 
 
 
